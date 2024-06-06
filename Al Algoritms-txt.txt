@@ -1,0 +1,205 @@
+#Ai Algorithms 
+
+
+#MLP
+import numpy as np
+import matplotlib.pyplot as plt 
+x = np.array([[0,0,1,1],[0,1,0,1]])
+y = np.array([[0,1,1,0]]) # XoR gate
+# y = np.array([[1,0,0,1]]) # XnoR gate
+no_x = 2
+no_y = 1
+no_h = 2
+tot = x.shape[1]
+lr = 0.1
+
+np.random.seed(2)
+w1 = np.random.rand(no_h,no_x)
+w2 = np.random.rand(no_y,no_h)
+losses = []
+
+def sigmoid(z):
+    z = 1/(1+np.exp(-z))
+    return z
+
+
+# Forward Propagation
+def frwd_prop(w1,w2,x):
+    z1 = np.dot(w1,x)
+    a1 = sigmoid(z1)
+    z2 = np.dot(w2,a1)
+    a2 = sigmoid(z2)
+    
+    return z1,a1,z2,a2
+
+
+# Backward propagation
+def back_prop(tot, w1, w2, z1, a1, z2, a2, y):
+    dz2 = a2 - y
+    dw2 = np.dot(dz2, a1.T) / tot
+    dz1 = np.dot(w2.T, dz2) * a1 * (1 - a1)
+    dw1 = np.dot(dz1, x.T) / tot
+    dw1 = np.reshape(dw1, w1.shape)
+    
+    dw2 = np.reshape(dw2, w2.shape)
+    return dz2, dw2, dz1, dw1
+
+
+# loss value
+epochs = 20000
+for i in range(epochs):
+    z1 , a1,z2,a2 = frwd_prop(w1,w2,x)
+    loss = -(1/tot) * np.sum(y*np.log(a2) + (1-y)*np.log(1-a2))
+    losses.append(loss)
+    dz2, dw2, dz1, dw1 = back_prop(tot, w1, w2, z1, a1, z2, a2, y)
+    w2 = w2 - lr*dw2
+    w1 = w1 - lr*dw1
+
+plt.plot(losses)
+plt.xlabel("Epochs")
+plt.ylabel("Loss value")
+    
+
+# Defining Prediction method
+def predict(w1, w2, input):
+    z1, a1, z2, a2 = frwd_prop(w1, w2, mlp_test)
+    a2 = np.squeeze(a2)
+    if a2 >= 0.5:
+        print("For input", [i[0] for i in input], "output is 1")
+    else:
+        print("For input", [i[0] for i in input], "output is 0")
+
+
+# Calling Network Model
+mlp_test = np.array([[1],[0]])
+predict(w1, w2, mlp_test)
+mlp_test = np.array([[0],[0]])
+predict(w1, w2, mlp_test)
+mlp_test = np.array([[0],[1]])
+predict(w1, w2, mlp_test)
+mlp_test = np.array([[1],[1]])
+predict(w1, w2, mlp_test)
+
+
+# Decision Tree
+import pandas as pd
+
+df = pd.read_csv("titanic.csv")
+df.head()
+
+inputs = df.drop("Survived",axis="columns")
+target = df["Survived"]
+
+from sklearn.preprocessing import LabelEncoder
+le_Sex = LabelEncoder()
+le_Ticket = LabelEncoder()
+le_Cabin = LabelEncoder()
+le_Embarked = LabelEncoder()
+
+inputs['Sex_n'] = le_Sex.fit_transform(inputs["Sex"])
+inputs['Ticket_n'] = le_Sex.fit_transform(inputs["Ticket"])
+inputs['Cabin_n'] = le_Sex.fit_transform(inputs["Cabin"])
+inputs['Embarked_n'] = le_Sex.fit_transform(inputs["Embarked"])
+
+inputs
+
+inputs_n = inputs.drop(['Sex','Ticket','Cabin','Embarked'], axis='columns')
+
+inputs_n
+
+target
+
+from sklearn import tree
+import numpy as np
+model = tree.DecisionTreeClassifier()
+
+inputs_n = inputs.drop(['Sex','Ticket','Cabin','Embarked','Name'], axis='columns')
+
+inputs_n
+
+inputs_n = inputs_n.dropna()
+target = target[inputs_n.index]
+model.fit(inputs_n,target)
+
+model.score(inputs_n,target)
+
+model.predict([[2,1,38.0,1,0,71.2833,0,596,81,0]])
+
+# K Means
+
+from sklearn.cluster import KMeans
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from matplotlib import pyplot as plt
+%matplotlib inline
+ df = pd.read_csv("income.csv")
+df.head()
+
+plt.scatter(df.Age,df["Income($)"])
+plt.xlabel("Age")
+plt.ylabel("Income($)")
+
+km = KMeans(n_clusters=3)
+y_predicted = km.fit_predict(df[["Age","Income($)"]])
+y_predicted 
+
+df["cluster"] = y_predicted
+df.head()
+
+km.cluster_centers_
+
+df1 = df[df.cluster==0]
+df2 = df[df.cluster==1]
+df3 = df[df.cluster==2]
+plt.scatter(df1.Age,df1["Income($)"],color="green")
+plt.scatter(df2.Age,df2["Income($)"],color="red")
+plt.scatter(df3.Age,df3["Income($)"],color="black")
+plt.scatter(km.cluster_centers_[:,0],km.cluster_centers_[:,1],color="purple",marker="*",label="centroid")
+plt.xlabel("Age")
+plt.ylabel("Income($)")
+plt.legend()
+
+df.head()
+
+scaler = MinMaxScaler()
+scaler.fit(df[["Income($)"]])
+df["Income($)"] = scaler.transform(df[["Income($)"]])
+scaler.fit(df[["Age"]])
+df["Age"] = scaler.transform(df[["Age"]])
+df.head()
+
+plt.scatter(df.Age,df["Income($)"])
+
+km = KMeans(n_clusters=3)
+
+y_predicted = km.fit_predict(df[["Age","Income($)"]])
+y_predicted
+
+df.head()
+
+
+df["cluster"] = y_predicted
+df.head()
+
+km.cluster_centers_
+
+df1 = df[df.cluster==0]
+df2 = df[df.cluster==1]
+df3 = df[df.cluster==2]
+plt.scatter(df1.Age,df1["Income($)"],color="green")
+plt.scatter(df2.Age,df2["Income($)"],color="red")
+plt.scatter(df3.Age,df3["Income($)"],color="black")
+plt.scatter(km.cluster_centers_[:,0],km.cluster_centers_[:,1],color="purple",marker="*",label="centroid" )
+plt.legend()
+
+sse = []
+k_rng = range(1,10)
+for k in k_rng:
+    km = KMeans(n_clusters=k)
+    km.fit(df[["Age","Income($)"]])
+    sse.append(km.inertia_)
+
+plt.xlabel("K")
+plt.ylabel("Sum of Squrared Error")
+plt.plot(k_rng,sse)
+
